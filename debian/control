@@ -1,0 +1,30 @@
+Source: openfx-arena-natron
+Section: video
+Priority: optional
+Maintainer: Aleksey Samoilov <samoilov.lex@gmail.com>
+Build-Depends: debhelper (>= 10),
+                          libopencolorio-dev,
+                          libfontconfig1-dev, 
+                          libxml2-dev,
+                          libzip-dev,
+                          libpango1.0-dev,
+                          libcairo2-dev,
+                          librsvg2-dev,
+                          libcdr-dev,
+                          librevenge-dev,
+                          libpoppler-glib-dev,
+                          libpoppler-private-dev,
+                          libgl1-mesa-dev,
+                          libffi-dev,
+                          libselinux1-dev,
+                          libmount-dev,
+                          libfftw3-dev,
+                          liblcms2-dev,
+                          libmagick++-dev,
+                          quilt
+Standards-Version: 3.9.8
+
+Package: openfx-arena-natron
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: set of OpenFX plugins designed for Natron but also compatible with other hosts.
