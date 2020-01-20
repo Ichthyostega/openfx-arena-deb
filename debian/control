@@ -1,30 +1,40 @@
 Source: openfx-arena-natron
 Section: video
 Priority: optional
-Maintainer: Aleksey Samoilov <samoilov.lex@gmail.com>
-Build-Depends: debhelper (>= 10),
-                          libopencolorio-dev,
-                          libfontconfig1-dev, 
-                          libxml2-dev,
-                          libzip-dev,
-                          libpango1.0-dev,
-                          libcairo2-dev,
-                          librsvg2-dev,
-                          libcdr-dev,
-                          librevenge-dev,
-                          libpoppler-glib-dev,
-                          libpoppler-private-dev,
-                          libgl1-mesa-dev,
-                          libffi-dev,
-                          libselinux1-dev,
-                          libmount-dev,
-                          libfftw3-dev,
-                          liblcms2-dev,
-                          libmagick++-dev,
-                          quilt
+Maintainer: Hermann Vosseler <deb@ichthyostega.de>
 Standards-Version: 3.9.8
+Build-Depends: debhelper (>= 10),
+	libopencolorio-dev,
+	libfontconfig1-dev,
+	libxml2-dev,
+	libzip-dev,
+	libpango1.0-dev,
+	libcairo2-dev,
+	librsvg2-dev,
+	libcdr-dev,
+	librevenge-dev,
+	libpoppler-glib-dev,
+	libpoppler-private-dev,
+	libgl1-mesa-dev,
+	libffi-dev,
+	libselinux1-dev,
+	libmount-dev,
+	libfftw3-dev,
+	liblcms2-dev,
+	libmagick++-dev,
+    pkg-config
 
 Package: openfx-arena-natron
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: set of OpenFX plugins designed for Natron but also compatible with other hosts.
+Description: extended set of OpenFX plugins designed for Natron
+ The OpenFX plugins in this package can be used with Natron, but are also
+ compatible with other OpenFX hosts. This package belongs to Natron
+ release 3.2.14 and contains the following plugins:
+ OpenRaster; ReadCDR; ReadKrita; ReadSVG; ReadPDF; Text(FX); Arc; Charcoal;
+ Edges; Implode; Modulate; Oilpaint; Polar; Polaroid; ReadMisc; ReadPSD(XCF);
+ Reflection; Roll; Sketch; Swirl; Texture; Tile; Wave; Bulge (OCL);
+ Glare (OCL); Ripple (OCL); Twirl (OCL); Sharpen (OCL); Cartoon (OCL);
+ Duotone (OCL); Edge (OCL); CLFilter (OCL); HaldCLUT; Morphology;
+ AudioCurve; RichText
+

@@ -1,63 +1,26 @@
-openfx-arena-natron (1:2.3.12-1~stretch) Lumiera-stretch-tool; urgency=medium
+openfx-arena-natron (2.3.14-2~buster) Lumiera-buster-tool; urgency=low
+
+  * Rebuild for use on Debian/Buster(stable)
+  * simplify debian/rules, drop quilt dependency, add pkg-config
+  * do not download the bundled lodepng library via curl from Github
+  * update the bundled lodepng library to include an
+    integer overflow fix (commit 2febfe0d1 / 2020-1-12)
+    from https://github.com/lvandeve/lodepng
+
+ -- Hermann Vosseler <deb@ichthyostega.de>  Mon, 20 Jan 2020 08:28:51 +0100
+
+openfx-arena-natron (2.3.12-1~stretch) Lumiera-stretch-tool; urgency=medium
 
   * Rebuild for use on Debian/Stretch(stable)
   * unmodified port from the Ubuntu/Bionic PPA of Aleksey Samoilov
 
  -- Hermann Vosseler <deb@ichthyostega.de>  Sat, 26 May 2018 05:36:33 +0200
 
-openfx-arena-natron (1:2.3.12-1~bionic) bionic; urgency=low
+openfx-arena-natron (2.3.12-1~bionic) bionic; urgency=low
 
   * New upstream release
 
  -- Aleksey Samoilov <samoilov.lex@gmail.com>  Thu, 24 May 2018 23:28:43 +0400
-
-openfx-arena-natron (1:2.3.11-9~bionic) bionic; urgency=low
-
-  * Rebuild
-
- -- Aleksey Samoilov <samoilov.lex@gmail.com>  Tue, 08 May 2018 17:53:33 +0400
-
-openfx-arena-natron (1:2.3.11-8~bionic) bionic; urgency=low
-
-  * Rebuild
-
- -- Aleksey Samoilov <samoilov.lex@gmail.com>  Tue, 08 May 2018 16:43:40 +0400
-
-openfx-arena-natron (1:2.3.11-7~bionic) bionic; urgency=low
-
-  * Fix
-
- -- Aleksey Samoilov <samoilov.lex@gmail.com>  Tue, 08 May 2018 15:58:52 +0400
-
-openfx-arena-natron (1:2.3.11-6~bionic) bionic; urgency=low
-
-  * Fix again
-
- -- Aleksey Samoilov <samoilov.lex@gmail.com>  Tue, 08 May 2018 15:53:52 +0400
-
-openfx-arena-natron (1:2.3.11-5~bionic) bionic; urgency=low
-
-  * Fix
-
- -- Aleksey Samoilov <samoilov.lex@gmail.com>  Tue, 08 May 2018 15:36:04 +0400
-
-openfx-arena-natron (1:2.3.11-4~bionic) bionic; urgency=low
-
-  * Fix
-
- -- Aleksey Samoilov <samoilov.lex@gmail.com>  Tue, 08 May 2018 15:06:06 +0400
-
-openfx-arena-natron (1:2.3.11-3~bionic) bionic; urgency=low
-
-  * Fix
-
- -- Aleksey Samoilov <samoilov.lex@gmail.com>  Tue, 08 May 2018 14:56:01 +0400
-
-openfx-arena-natron (1:2.3.11-2~bionic) bionic; urgency=low
-
-  * Fix
-
- -- Aleksey Samoilov <samoilov.lex@gmail.com>  Tue, 08 May 2018 14:43:11 +0400
 
 openfx-arena-natron (2.3.11-1~bionic) bionic; urgency=low
 
