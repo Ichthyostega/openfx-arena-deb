@@ -1,10 +1,11 @@
 /*
- * This file is part of openfx-arena <https://github.com/olear/openfx-arena>,
+ * openfx-arena <https://github.com/rodlie/openfx-arena>,
  * Copyright (C) 2016 INRIA
  *
  * openfx-arena is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as published
- * by the Free Software Foundation.
+ * by the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
  * openfx-arena is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -32,12 +33,13 @@
 #include <fstream>
 
 #include "fx.h"
+#include "RichText.h" // common text related functions
 
 #define kPluginName "TextOFX"
 #define kPluginGrouping "Draw"
 #define kPluginIdentifier "net.fxarena.openfx.Text"
 #define kPluginVersionMajor 6
-#define kPluginVersionMinor 9
+#define kPluginVersionMinor 10
 
 #define kSupportsTiles 0
 #define kSupportsMultiResolution 0
@@ -83,17 +85,17 @@
 
 #define kParamWrap "wrap"
 #define kParamWrapLabel "Wrap"
-#define kParamWrapHint "Word wrap. Disabled if auto size or custom (transform) position is enabled."
+#define kParamWrapHint "Word wrap. Disabled if auto size and/or custom position is enabled."
 #define kParamWrapDefault 0
 
 #define kParamAlign "align"
 #define kParamAlignLabel "Horizontal align"
-#define kParamAlignHint "Horizontal text align. Disabled if custom position is enabled."
+#define kParamAlignHint "Horizontal text align. Custom position and auto size must be disabled and word wrap must be enabled (any option except none) to get anything else than left align."
 #define kParamAlignDefault 0
 
 #define kParamVAlign "valign"
 #define kParamVAlignLabel "Vertical align"
-#define kParamVAlignHint "Vertical text align. Disabled if custom position is enabled."
+#define kParamVAlignHint "Vertical text align. Disabled if custom position and/or auto size is enabled."
 #define kParamVAlignDefault 0
 
 #define kParamMarkup "markup"
@@ -190,8 +192,17 @@
 #define kParamPositionMoveDefault true
 
 #define kParamTextFile "file"
-#define kParamTextFileLabel "File"
+#define kParamTextFileLabel "Text File"
 #define kParamTextFileHint "Use text from filename."
+
+#define kParamSubtitleFile "subtitle"
+#define kParamSubtitleFileLabel "Subtitle File"
+#define kParamSubtitleFileHint "Load and animate a subtitle file (SRT)."
+
+#define kParamFPS "fps"
+#define kParamFPSLabel "Frame Rate"
+#define kParamFPSHint "The frame rate of the project, for use with subtitles."
+#define kParamFPSDefault 24.0
 
 #define kParamCenterInteract "centerInteract"
 #define kParamCenterInteractLabel "Center Interact"
@@ -316,6 +327,7 @@ public:
     virtual bool getRegionOfDefinition(const OFX::RegionOfDefinitionArguments &args, OfxRectD &rod) OVERRIDE FINAL;
 
     std::string textFromFile(std::string filename);
+    void loadSRT();
     void resetCenter(double time);
     void setFontDesc(int stretch, int weight, PangoFontDescription* desc);
 
@@ -364,6 +376,8 @@ private:
     FcConfig* _fcConfig;
     OFX::DoubleParam *_scrollX;
     OFX::DoubleParam *_scrollY;
+    OFX::StringParam *_srt;
+    OFX::DoubleParam *_fps;
 };
 
 TextFXPlugin::TextFXPlugin(OfxImageEffectHandle handle)
@@ -411,6 +425,8 @@ TextFXPlugin::TextFXPlugin(OfxImageEffectHandle handle)
 , _fcConfig(NULL)
 , _scrollX(NULL)
 , _scrollY(NULL)
+, _srt(NULL)
+, _fps(NULL)
 {
     _dstClip = fetchClip(kOfxImageEffectOutputClipName);
     assert(_dstClip && _dstClip->getPixelComponents() == OFX::ePixelComponentRGBA);
@@ -456,13 +472,16 @@ TextFXPlugin::TextFXPlugin(OfxImageEffectHandle handle)
     _fontOverride = fetchStringParam(kParamFontOverride);
     _scrollX = fetchDoubleParam(kParamScrollX);
     _scrollY = fetchDoubleParam(kParamScrollY);
+    _srt = fetchStringParam(kParamSubtitleFile);
+    _fps = fetchDoubleParam(kParamFPS);
 
     assert(_text && _fontSize && _fontName && _textColor && _bgColor && _font && _wrap
            && _justify && _align && _valign && _markup && _style && auto_ && stretch_ && weight_ && strokeColor_
            && strokeWidth_ && strokeDash_ && strokeDashPattern_ && fontAA_ && subpixel_ && _hintStyle
            && _hintMetrics && _circleRadius && _circleWords && _letterSpace && _canvas
            && _arcRadius && _arcAngle && _rotate && _scale && _position && _move && _txt
-           && _skewX && _skewY && _scaleUniform && _centerInteract && _fontOverride && _scrollX && _scrollY);
+           && _skewX && _skewY && _scaleUniform && _centerInteract && _fontOverride && _scrollX && _scrollY
+           && _srt && _fps);
 
     _fcConfig = FcInitLoadConfigAndFonts();
 
@@ -535,6 +554,29 @@ std::string TextFXPlugin::textFromFile(std::string filename) {
         }
     }
     return result;
+}
+
+// try to parse subtitle
+void TextFXPlugin::loadSRT()
+{
+    std::string filename;
+    double fps = 0.0;
+    _srt->getValue(filename);
+    _fps->getValue(fps);
+    if (!RichText::fileExists(filename)) { return; }
+    std::vector<RichText::RichTextSubtitle> subtitles = RichText::parseSRT(filename);
+    if (subtitles.size()==0) { return; }
+
+    // remove existing keys
+    _text->deleteAllKeys();
+
+    for (int i=0;i<subtitles.size();++i) { // add each subtitle at given time
+        int startFrame = subtitles.at(i).start*fps;
+        int endFrame = subtitles.at(i).end*fps;
+        std::string textFrame = subtitles.at(i).str;
+        _text->setValueAtTime(startFrame, textFrame); // start frame
+        _text->setValueAtTime(endFrame, ""); // end frame
+    }
 }
 
 void TextFXPlugin::setFontDesc(int stretch, int weight, PangoFontDescription* desc)
@@ -633,13 +675,7 @@ void TextFXPlugin::render(const OFX::RenderArguments &args)
     }
 
     // renderscale
-    if (dstImg->getRenderScale().x != args.renderScale.x ||
-        dstImg->getRenderScale().y != args.renderScale.y ||
-        dstImg->getField() != args.fieldToRender) {
-        setPersistentMessage(OFX::Message::eMessageError, "", "OFX Host gave image with wrong scale or field properties");
-        OFX::throwSuiteStatusException(kOfxStatFailed);
-        return;
-    }
+    checkBadRenderScaleOrField(dstImg, args);
 
     // get bitdepth
     OFX::BitDepthEnum dstBitDepth = dstImg->getPixelDepth();
@@ -788,6 +824,10 @@ void TextFXPlugin::render(const OFX::RenderArguments &args)
 
     layout = pango_cairo_create_layout(cr);
     alist = pango_attr_list_new();
+
+    // flip
+    cairo_scale(cr, 1.0f, -1.0f);
+    cairo_translate(cr, 0.0f, -height);
 
     cairo_font_options_t* options = cairo_font_options_create();
 
@@ -1106,32 +1146,28 @@ void TextFXPlugin::render(const OFX::RenderArguments &args)
         }
     }
 
+    // cairo status?
     status = cairo_status(cr);
-
     if (status) {
         setPersistentMessage(OFX::Message::eMessageError, "", "Render failed");
         OFX::throwSuiteStatusException(kOfxStatErrFormat);
     }
 
+    // flush
     cairo_surface_flush(surface);
 
+    // get pixels
     unsigned char* cdata = cairo_image_surface_get_data(surface);
-    unsigned char* pixels = new unsigned char[width * height * 4];
-    for (int i = 0; i < width; ++i) {
-        for (int j = 0; j < height; ++j) {
-            for (int k = 0; k < 4; ++k)
-                pixels[(i + j * width) * 4 + k] = cdata[(i + (height - 1 - j) * width) * 4 + k];
-        }
-    }
-
     float* pixelData = (float*)dstImg->getPixelData();
+
+    // write output
     int offset = 0;
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
-            pixelData[offset + 0] = pixels[offset + 2] * (1.f / 255);
-            pixelData[offset + 1] = pixels[offset + 1] * (1.f / 255);
-            pixelData[offset + 2] = pixels[offset + 0] * (1.f / 255);
-            pixelData[offset + 3] = pixels[offset + 3] * (1.f / 255);
+            pixelData[offset + 0] = cdata[offset + 2] * (1.f / 255);
+            pixelData[offset + 1] = cdata[offset + 1] * (1.f / 255);
+            pixelData[offset + 2] = cdata[offset + 0] * (1.f / 255);
+            pixelData[offset + 3] = cdata[offset + 3] * (1.f / 255);
             offset += 4;
         }
     }
@@ -1143,7 +1179,6 @@ void TextFXPlugin::render(const OFX::RenderArguments &args)
     cairo_surface_destroy(surface);
     cdata = NULL;
     pixelData = NULL;
-    delete[] pixels;
 }
 
 void TextFXPlugin::changedParam(const OFX::InstanceChangedArgs &args, const std::string &paramName)
@@ -1190,6 +1225,8 @@ void TextFXPlugin::changedParam(const OFX::InstanceChangedArgs &args, const std:
             font = kParamFontNameDefault;
         }
         _genFonts(_fontName, _fontOverride, false, _fcConfig, gHostIsNatron, font, kParamFontNameAltDefault);
+    } else if (paramName == kParamSubtitleFile) {
+        loadSRT(); // load subtitle
     }
 
     clearPersistentMessage();
@@ -1442,6 +1479,28 @@ void TextFXPluginFactory::describeInContext(OFX::ImageEffectDescriptor &desc, Co
         param->setHint(kParamTextFileHint);
         param->setStringType(eStringTypeFilePath);
         param->setFilePathExists(true);
+        param->setAnimates(false);
+        if (page) {
+            page->addChild(*param);
+        }
+    }
+    {
+        StringParamDescriptor* param = desc.defineStringParam(kParamSubtitleFile);
+        param->setLabel(kParamSubtitleFileLabel);
+        param->setHint(kParamSubtitleFileHint);
+        param->setStringType(eStringTypeFilePath);
+        param->setFilePathExists(true);
+        param->setAnimates(false);
+        param->setLayoutHint(eLayoutHintNoNewLine, 1);
+        if (page) {
+            page->addChild(*param);
+        }
+    }
+    {
+        DoubleParamDescriptor* param = desc.defineDoubleParam(kParamFPS);
+        param->setLabel(kParamFPSLabel);
+        param->setHint(kParamFPSHint);
+        param->setDefault(kParamFPSDefault);
         param->setAnimates(false);
         if (page) {
             page->addChild(*param);

@@ -1,10 +1,11 @@
 /*
- * This file is part of openfx-arena <https://github.com/olear/openfx-arena>,
+ * openfx-arena <https://github.com/rodlie/openfx-arena>,
  * Copyright (C) 2016 INRIA
  *
  * openfx-arena is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as published
- * by the Free Software Foundation.
+ * by the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
  * openfx-arena is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -341,13 +342,7 @@ void TextPlugin::render(const OFX::RenderArguments &args)
     }
 
     // renderscale
-    if (dstImg->getRenderScale().x != args.renderScale.x ||
-        dstImg->getRenderScale().y != args.renderScale.y ||
-        dstImg->getField() != args.fieldToRender) {
-        setPersistentMessage(OFX::Message::eMessageError, "", "OFX Host gave image with wrong scale or field properties");
-        OFX::throwSuiteStatusException(kOfxStatFailed);
-        return;
-    }
+    checkBadRenderScaleOrField(dstImg, args);
 
     // get bitdepth
     OFX::BitDepthEnum dstBitDepth = dstImg->getPixelDepth();

@@ -2,7 +2,6 @@ PLUGINNAME = Extra
 
 PLUGINOBJECTS = \
     lodepng.o \
-    TextFX.o \
     ReadCDR.o \
     ReadSVG.o \
     ReadKrita.o \
@@ -22,8 +21,6 @@ PLUGINOBJECTS += \
     SequenceParsing.o
 
 RESOURCES = \
-    net.fxarena.openfx.Text.png \
-    net.fxarena.openfx.Text.svg \
     fr.inria.openfx.ReadCDR.png \
     fr.inria.openfx.ReadCDR.svg \
     net.fxarena.openfx.ReadSVG.png \
@@ -43,17 +40,19 @@ SRCDIR = ..
 include $(SRCDIR)/Makefile.master
 include $(SRCDIR)/Makefile.io
 
+VPATH += $(SRCDIR)/lodepng
+
 CXXFLAGS  += \
     $(FCONFIG_CXXFLAGS) \
-    $(PANGO_CXXFLAGS) \
     $(SVG_CXXFLAGS) \
     $(CDR_CXXFLAGS) \
     $(XML_CXXFLAGS) \
     $(ZIP_CXXFLAGS) \
-    $(GLIB_CXXFLAGS)
+    $(GLIB_CXXFLAGS) \
+    -I$(SRCDIR)/lodepng
+
 LINKFLAGS += \
     $(FCONFIG_LINKFLAGS) \
-    $(PANGO_LINKFLAGS) \
     $(SVG_LINKFLAGS) \
     $(CDR_LINKFLAGS) \
     $(XML_LINKFLAGS) \
@@ -65,13 +64,17 @@ CXXFLAGS += $(POPPLER_CXXFLAGS)
 LINKFLAGS += $(POPPLER_LINKFLAGS)
 endif
 
-PNGVERSION = a70c086077c0eaecbae3845e4da4424de5f43361
+ifeq ($(OLD_POPPLER), ON)
+CXXFLAGS += -DLEGACY_POPPLER
+endif
 
-lodepng.cpp:
-	curl -o $@ https://raw.githubusercontent.com/lvandeve/lodepng/$(PNGVERSION)/lodepng.cpp
+#PNGVERSION = a70c086077c0eaecbae3845e4da4424de5f43361
 
-lodepng.h:
-	curl -o $@ https://raw.githubusercontent.com/lvandeve/lodepng/$(PNGVERSION)/lodepng.h
+#lodepng.cpp:
+#	curl -o $@ https://raw.githubusercontent.com/lvandeve/lodepng/$(PNGVERSION)/lodepng.cpp
+
+#lodepng.h:
+#	curl -o $@ https://raw.githubusercontent.com/lvandeve/lodepng/$(PNGVERSION)/lodepng.h
 
 $(OBJECTPATH)/lodepng.o: lodepng.cpp lodepng.h
 $(OBJECTPATH)/ReadKrita.o: ReadKrita.cpp lodepng.h
