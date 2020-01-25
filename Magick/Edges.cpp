@@ -1,10 +1,11 @@
 /*
- * This file is part of openfx-arena <https://github.com/olear/openfx-arena>,
+ * openfx-arena <https://github.com/rodlie/openfx-arena>,
  * Copyright (C) 2016 INRIA
  *
  * openfx-arena is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as published
- * by the Free Software Foundation.
+ * by the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
  * openfx-arena is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -130,13 +131,7 @@ void EdgesPlugin::render(const OFX::RenderArguments &args)
     if (srcImg.get()) {
         srcRod = srcImg->getRegionOfDefinition();
         srcBounds = srcImg->getBounds();
-        if (srcImg->getRenderScale().x != args.renderScale.x ||
-            srcImg->getRenderScale().y != args.renderScale.y ||
-            srcImg->getField() != args.fieldToRender) {
-            setPersistentMessage(OFX::Message::eMessageError, "", "OFX Host gave image with wrong scale or field properties");
-            OFX::throwSuiteStatusException(kOfxStatFailed);
-            return;
-        }
+        checkBadRenderScaleOrField(srcImg, args);
     } else {
         OFX::throwSuiteStatusException(kOfxStatFailed);
     }
@@ -152,13 +147,7 @@ void EdgesPlugin::render(const OFX::RenderArguments &args)
         OFX::throwSuiteStatusException(kOfxStatFailed);
         return;
     }
-    if (dstImg->getRenderScale().x != args.renderScale.x ||
-        dstImg->getRenderScale().y != args.renderScale.y ||
-        dstImg->getField() != args.fieldToRender) {
-        setPersistentMessage(OFX::Message::eMessageError, "", "OFX Host gave image with wrong scale or field properties");
-        OFX::throwSuiteStatusException(kOfxStatFailed);
-        return;
-    }
+    checkBadRenderScaleOrField(dstImg, args);
 
     // get bit depth
     OFX::BitDepthEnum dstBitDepth = dstImg->getPixelDepth();
@@ -227,6 +216,14 @@ void EdgesPlugin::render(const OFX::RenderArguments &args)
     // edge
     std::ostringstream edgeWidth;
     edgeWidth << edge * args.renderScale.x;
+
+#if MagickLibVersion >= 0x708
+    // https://github.com/ImageMagick/ImageMagick/issues/1298
+    // REMOVE WHEN ISSUE HAS BEEN RESOLVED
+    Magick::Image alphaChannel(image);
+    alphaChannel.channel(Magick::AlphaChannel);
+    image.alpha(false);
+#endif
 
     switch (kernel) {
     case 0:
@@ -317,6 +314,13 @@ void EdgesPlugin::render(const OFX::RenderArguments &args)
         image.morphology(Magick::EdgeMorphology,Magick::EuclideanKernel,edgeWidth.str());
         break;
     }
+
+#if MagickLibVersion >= 0x708
+    // https://github.com/ImageMagick/ImageMagick/issues/1298
+    // REMOVE WHEN ISSUE HAS BEEN RESOLVED
+    image.alpha(true);
+    image.composite(alphaChannel, 0, 0, Magick::CopyAlphaCompositeOp);
+#endif
 
     // multiply
     if (brightness>0) {

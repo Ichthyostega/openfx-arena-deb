@@ -1,10 +1,11 @@
 /*
- * This file is part of openfx-arena <https://github.com/olear/openfx-arena>,
+ * openfx-arena <https://github.com/rodlie/openfx-arena>,
  * Copyright (C) 2016 INRIA
  *
  * openfx-arena is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as published
- * by the Free Software Foundation.
+ * by the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
  * openfx-arena is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -98,6 +99,7 @@
 #define kParamOffsetLayerHint "Enable/Disable layer offset"
 #define kParamOffsetLayerDefault true
 
+using namespace OFX;
 using namespace OFX::IO;
 
 #ifdef OFX_IO_USING_OCIO
@@ -216,8 +218,7 @@ public:
     virtual void restoreStateFromParams() OVERRIDE FINAL;
 private:
     virtual bool isVideoStream(const std::string& /*filename*/) OVERRIDE FINAL { return false; }
-    virtual void decode(const std::string& filename, OfxTime time, int view, bool isPlayback, const OfxRectI& renderWindow, float *pixelData, const OfxRectI& bounds,
-                             OFX::PixelComponentEnum pixelComponents, int pixelComponentCount, int rowBytes) OVERRIDE FINAL
+    virtual void decode(const std::string& filename, OfxTime time, int view, bool isPlayback, const OfxRectI& renderWindow, const OfxPointD& renderScale, float *pixelData, const OfxRectI& bounds, OFX::PixelComponentEnum pixelComponents, int pixelComponentCount, int rowBytes) OVERRIDE FINAL
     {
         std::string rawComps;
         switch (pixelComponents) {
@@ -234,10 +235,10 @@ private:
                 OFX::throwSuiteStatusException(kOfxStatFailed);
                 return;
         }
-        decodePlane(filename, time, view, isPlayback, renderWindow, pixelData, bounds, pixelComponents, pixelComponentCount, rawComps, rowBytes);
+        decodePlane(filename, time, view, isPlayback, renderWindow, renderScale, pixelData, bounds, pixelComponents, pixelComponentCount, rawComps, rowBytes);
     }
     virtual OfxStatus getClipComponents(const OFX::ClipComponentsArguments& args, OFX::ClipComponentsSetter& clipComponents) OVERRIDE FINAL;
-    virtual void decodePlane(const std::string& filename, OfxTime time, int view, bool isPlayback, const OfxRectI& renderWindow, float *pixelData, const OfxRectI& bounds, OFX::PixelComponentEnum pixelComponents, int pixelComponentCount, const std::string& rawComponents, int rowBytes) OVERRIDE FINAL;
+    virtual void decodePlane(const std::string& filename, OfxTime time, int view, bool isPlayback, const OfxRectI& renderWindow, const OfxPointD& renderScale, float *pixelData, const OfxRectI& bounds, OFX::PixelComponentEnum pixelComponents, int pixelComponentCount, const std::string& rawComponents, int rowBytes) OVERRIDE FINAL;
     virtual bool getFrameBounds(const std::string& filename, OfxTime time, int view,OfxRectI *bounds, OfxRectI* format, double *par, std::string *error,int *tile_width, int *tile_height) OVERRIDE FINAL;
     virtual void changedParam(const OFX::InstanceChangedArgs &args, const std::string &paramName) OVERRIDE FINAL;
     virtual bool guessParamsFromFilename(const std::string& filename, std::string *colorspace, OFX::PreMultiplicationEnum *filePremult, OFX::PixelComponentEnum *components, int *componentCount) OVERRIDE FINAL;
@@ -394,9 +395,14 @@ OfxStatus ReadPSDPlugin::getClipComponents(const OFX::ClipComponentsArguments& a
     return kOfxStatOK;
 }
 
-void ReadPSDPlugin::decodePlane(const std::string& filename, OfxTime time, int /*view*/, bool /*isPlayback*/, const OfxRectI& renderWindow, float *pixelData, const OfxRectI& bounds,
+void ReadPSDPlugin::decodePlane(const std::string& filename, OfxTime time, int /*view*/, bool /*isPlayback*/, const OfxRectI& renderWindow, const OfxPointD& renderScale, float *pixelData, const OfxRectI& bounds,
                                  OFX::PixelComponentEnum /*pixelComponents*/, int /*pixelComponentCount*/, const std::string& rawComponents, int /*rowBytes*/)
 {
+    assert(renderScale.x == 1. && renderScale.y == 1.);
+    unused(renderScale);
+    assert(renderScale.x == 1. && renderScale.y == 1.);
+    unused(renderScale);
+
     #ifdef DEBUG
     std::cout << "decodePlane ..." << std::endl;
     #endif
