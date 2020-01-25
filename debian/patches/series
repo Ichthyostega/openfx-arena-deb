@@ -1,3 +1,2 @@
-openfx-arena-plugins-path.patch
-Bundle-lodepng.patch
-Bundle-lodepng--no-downloads-please.patch
+Plugin-path-OFX.patch
+
