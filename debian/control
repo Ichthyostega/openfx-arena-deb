@@ -4,17 +4,15 @@ Priority: optional
 Maintainer: Hermann Vosseler <deb@ichthyostega.de>
 Standards-Version: 3.9.8
 Build-Depends: debhelper (>= 10),
-	libopencolorio-dev,
+	libopencolorio-dev (>= 1.0.9),
+	libpoppler-glib-dev (>= 0.83~),
+	libpoppler-private-dev (>= 0.83~),
 	libfontconfig1-dev,
-	libxml2-dev,
-	libzip-dev,
 	libpango1.0-dev,
 	libcairo2-dev,
 	librsvg2-dev,
 	libcdr-dev,
 	librevenge-dev,
-	libpoppler-glib-dev,
-	libpoppler-private-dev,
 	libgl1-mesa-dev,
 	libffi-dev,
 	libselinux1-dev,
@@ -22,6 +20,8 @@ Build-Depends: debhelper (>= 10),
 	libfftw3-dev,
 	liblcms2-dev,
 	libmagick++-dev,
+	libxml2-dev,
+	libzip-dev,
     pkg-config
 
 Package: openfx-arena-natron
