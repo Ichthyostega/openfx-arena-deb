@@ -7,6 +7,10 @@ Build-Depends: debhelper (>= 10),
 	libopencolorio-dev (>= 1.0.9),
 	libpoppler-glib-dev (>= 0.83~),
 	libpoppler-private-dev (>= 0.83~),
+# require ImageMagic with 16bit scale and unclamped float processing("HDRI")
+	libmagick++-6.q16hdri-dev,
+# tmp workaround since pkg-config (ImageMagick++-im6.Q16HDRI.pc) defines wrong dependency:
+	libmagick++-dev,
 	libfontconfig1-dev,
 	libpango1.0-dev,
 	libcairo2-dev,
@@ -19,7 +23,6 @@ Build-Depends: debhelper (>= 10),
 	libmount-dev,
 	libfftw3-dev,
 	liblcms2-dev,
-	libmagick++-dev,
 	libxml2-dev,
 	libzip-dev,
     pkg-config
