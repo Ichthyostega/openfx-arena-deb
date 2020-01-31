@@ -1,0 +1,23 @@
+From: Ichthyostega <prg@ichthyostega.de>
+Date: Fri, 31 Jan 2020 17:57:54 +0100
+Subject: CMake: fix librevenge dependency
+
+Librevenge has been split into several libraries, and thus we need
+to check for all three pkg-config files to pick up all link flags.
+---
+ CMakeLists.txt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index d22a499..1506365 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -55,7 +55,7 @@ pkg_search_module(SVG REQUIRED librsvg-2.0)
+ pkg_search_module(GLIB REQUIRED glib-2.0)
+ pkg_search_module(CAIRO REQUIRED cairo)
+ pkg_search_module(POPPLER REQUIRED poppler-glib)
+-pkg_search_module(REVENGE REQUIRED librevenge-0.0)
++pkg_check_modules(REVENGE REQUIRED librevenge-0.0 librevenge-generators-0.0 librevenge-stream-0.0)
+ pkg_search_module(CDR REQUIRED libcdr-0.1)
+ add_compile_options(${MAGICK_STATIC_CFLAGS}) # we need the magick flags
+ 

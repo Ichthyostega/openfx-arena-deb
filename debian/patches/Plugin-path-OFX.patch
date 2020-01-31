@@ -43,8 +43,8 @@ Index: b/CMakeLists.txt
 +option(OFX_PLUGIN_PATH "Subdir of destination to install the plugin bundle" "")
  set(MAGICK_PKG_CONFIG "Magick++" CACHE STRING "ImageMagick pkg-config name")
  
- include(FindOpenGL REQUIRED)
-@@ -336,19 +337,19 @@ IF("${OFX_ARCH_NAME}" EQUAL "UNKNOWN")
+ # Require OpenGL
+@@ -353,19 +354,19 @@ IF("${OFX_ARCH_NAME}" EQUAL "UNKNOWN")
    MESSAGE(SEND_ERROR "OFX_ARCH_NAME was not detected. Install targets will be unavailable. See http://openeffects.org/documentation/reference/ch02s02.html to pick an arch name.")
  ELSE()
    INSTALL(TARGETS ${PROJECT_NAME}

@@ -1,2 +1,5 @@
+0001-CMake-OpenGL-GLVND-compatibility.patch
+0002-CMake-fix-librevenge-dependency.patch
+0003-CMake-include-the-HaldCLUT-plugin-into-the-bundle.patch
 Plugin-path-OFX.patch
 
