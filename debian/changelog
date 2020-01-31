@@ -1,3 +1,18 @@
+openfx-arena-natron (2.3.15~rc14+libs-1~buster) Lumiera-buster-tool; urgency=low
+
+  * New Upstream Release (actually RC14 for Natron 2.3.15).
+  * rework package definition; add myself as maintainer
+  * packaged with git-buildpackage including git-submodules.
+  * sswitch to building directly via CMake.
+  * force build against ImageMagic with quantum.depth=16 and HDRI
+  * build the new AudioCurve plugin.
+  * build the new HaldCLUT plugin.
+  * requires libcurl (for download of CLUT files from Github)
+  * debhelper/compat-level 11
+  * Rebuild for use on Debian/Buster(stable).
+
+ -- Hermann Vosseler <deb@ichthyostega.de>  Fri, 31 Jan 2020 01:37:48 +0100
+
 openfx-arena-natron (2.3.14-2~buster) Lumiera-buster-tool; urgency=low
 
   * Rebuild for use on Debian/Buster(stable)

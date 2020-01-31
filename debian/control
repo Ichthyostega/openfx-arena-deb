@@ -3,7 +3,7 @@ Section: video
 Priority: optional
 Maintainer: Hermann Vosseler <deb@ichthyostega.de>
 Standards-Version: 3.9.8
-Build-Depends: debhelper (>= 10),
+Build-Depends: debhelper (>= 11~),
 	libopencolorio-dev (>= 1.0.9),
 	libpoppler-glib-dev (>= 0.83~),
 	libpoppler-private-dev (>= 0.83~),
