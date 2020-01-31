@@ -25,7 +25,8 @@ Build-Depends: debhelper (>= 10),
 	liblcms2-dev,
 	libxml2-dev,
 	libzip-dev,
-    pkg-config
+    pkg-config,
+	cmake
 
 Package: openfx-arena-natron
 Architecture: any

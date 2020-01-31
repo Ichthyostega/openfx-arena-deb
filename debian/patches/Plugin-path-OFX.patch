@@ -19,19 +19,6 @@ Index: b/OpenFX/HostSupport/src/ofxhPluginCache.cpp
  #endif
  #if defined(__APPLE__)
    _pluginPath.push_back("/Library/OFX/Plugins");
-Index: b/OpenFX/Support/Plugins/Makefile.master
-===================================================================
---- a/OpenFX/Support/Plugins/Makefile.master
-+++ b/OpenFX/Support/Plugins/Makefile.master
-@@ -55,7 +55,7 @@ ifeq ($(OS:MINGW%=MINGW),MINGW)
-   PLUGINPATH=C:\\Program Files\\Common Files\\OFX\\Plugins
- endif
- ifeq ($(OS),Linux)
--  PLUGINPATH=/usr/OFX/Plugins
-+  PLUGINPATH=/usr/lib/OFX/Plugins
- endif
- ifeq ($(OS),FreeBSD)
-   PLUGINPATH=/usr/OFX/Plugins
 Index: b/OpenFX-IO/openfx/HostSupport/src/ofxhPluginCache.cpp
 ===================================================================
 --- a/OpenFX-IO/openfx/HostSupport/src/ofxhPluginCache.cpp
@@ -45,16 +32,40 @@ Index: b/OpenFX-IO/openfx/HostSupport/src/ofxhPluginCache.cpp
  #endif
  #if defined(__APPLE__)
    _pluginPath.push_back("/Library/OFX/Plugins");
-Index: b/OpenFX-IO/openfx/Support/Plugins/Makefile.master
+Index: b/CMakeLists.txt
 ===================================================================
---- a/OpenFX-IO/openfx/Support/Plugins/Makefile.master
-+++ b/OpenFX-IO/openfx/Support/Plugins/Makefile.master
-@@ -55,7 +55,7 @@ ifeq ($(OS:MINGW%=MINGW),MINGW)
-   PLUGINPATH=C:\\Program Files\\Common Files\\OFX\\Plugins
- endif
- ifeq ($(OS),Linux)
--  PLUGINPATH=/usr/OFX/Plugins
-+  PLUGINPATH=/usr/lib/OFX/Plugins
- endif
- ifeq ($(OS),FreeBSD)
-   PLUGINPATH=/usr/OFX/Plugins
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -32,6 +32,7 @@ option(OLD_POPPLER "Support poppler-lib
+ option(AUDIO "Enable AudioCurve OFX" OFF)
+ option(RICHTEXT "Enable RichText OFX" OFF)
+ option(BUNDLE_FONTS_CONF "Bundle fonts.conf" OFF)
++option(OFX_PLUGIN_PATH "Subdir of destination to install the plugin bundle" "")
+ set(MAGICK_PKG_CONFIG "Magick++" CACHE STRING "ImageMagick pkg-config name")
+ 
+ include(FindOpenGL REQUIRED)
+@@ -336,19 +337,19 @@ IF("${OFX_ARCH_NAME}" EQUAL "UNKNOWN")
+   MESSAGE(SEND_ERROR "OFX_ARCH_NAME was not detected. Install targets will be unavailable. See http://openeffects.org/documentation/reference/ch02s02.html to pick an arch name.")
+ ELSE()
+   INSTALL(TARGETS ${PROJECT_NAME}
+-    RUNTIME DESTINATION ${PROJECT_NAME}.ofx.bundle/Contents/${OFX_ARCH_NAME}
+-    LIBRARY DESTINATION ${PROJECT_NAME}.ofx.bundle/Contents/${OFX_ARCH_NAME}
++    RUNTIME DESTINATION ${OFX_PLUGIN_PATH}/${PROJECT_NAME}.ofx.bundle/Contents/${OFX_ARCH_NAME}
++    LIBRARY DESTINATION ${OFX_PLUGIN_PATH}/${PROJECT_NAME}.ofx.bundle/Contents/${OFX_ARCH_NAME}
+   )
+   INSTALL(FILES ${RESOURCES}
+-    DESTINATION ${PROJECT_NAME}.ofx.bundle/Contents/Resources
++    DESTINATION ${OFX_PLUGIN_PATH}/${PROJECT_NAME}.ofx.bundle/Contents/Resources
+   )
+   INSTALL(FILES Bundle/Info.plist
+-    DESTINATION ${PROJECT_NAME}.ofx.bundle/Contents
++    DESTINATION ${OFX_PLUGIN_PATH}/${PROJECT_NAME}.ofx.bundle/Contents
+   )
+   if(${BUNDLE_FONTS_CONF})
+     install(
+         FILES ${CMAKE_CURRENT_BINARY_DIR}/fonts.conf
+-        DESTINATION ${PROJECT_NAME}.ofx.bundle/Contents/Resources/fonts
++        DESTINATION ${OFX_PLUGIN_PATH}/${PROJECT_NAME}.ofx.bundle/Contents/Resources/fonts
+     )
+   endif()
+ ENDIF()
