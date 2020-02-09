@@ -1,3 +1,11 @@
+openfx-arena-natron (2.3.15~rc14+libs-2~buster) Lumiera-buster-tool; urgency=low
+
+  * Do not include the RichText plugin yet (it is WIP)
+  * Fix libsox assertion failure in release builds
+  * Rebuild for use on Debian/Buster(stable).
+
+ -- Hermann Vosseler <deb@ichthyostega.de>  Sun, 09 Feb 2020 08:07:11 +0100
+
 openfx-arena-natron (2.3.15~rc14+libs-1~buster) Lumiera-buster-tool; urgency=low
 
   * New Upstream Release (actually RC14 for Natron 2.3.15).
