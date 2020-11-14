@@ -9,6 +9,10 @@ PLUGINOBJECTS = \
     ReadKrita.o \
     OpenRaster.o
 
+ifeq ($(shell pkg-config --exists sox && echo yes),yes)
+AUDIO = ON
+endif
+
 ifeq ($(AUDIO), ON)
 PLUGINOBJECTS += AudioCurve.o
 endif
@@ -181,10 +185,6 @@ LINKFLAGS += \
 ifeq ($(AUDIO), ON)
 CXXFLAGS += $(SOX_CXXFLAGS)
 LINKFLAGS += $(SOX_LINKFLAGS)
-endif
-
-ifeq ($(OLD_POPPLER), ON)
-CXXFLAGS += -DLEGACY_POPPLER
 endif
 
 CXXFLAGS += -I. -I$(SRCDIR)/Magick -I$(SRCDIR)/Text -I$(SRCDIR)/lodepng

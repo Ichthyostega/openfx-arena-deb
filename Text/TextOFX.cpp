@@ -33,13 +33,13 @@
 #include <fstream>
 
 #include "fx.h"
-#include "RichText.h" // common text related functions
+#include "RichText.h" // common text related functions (will be renamed to CommonText in the future)
 
 #define kPluginName "TextOFX"
 #define kPluginGrouping "Draw"
 #define kPluginIdentifier "net.fxarena.openfx.Text"
 #define kPluginVersionMajor 6
-#define kPluginVersionMinor 10
+#define kPluginVersionMinor 13
 
 #define kSupportsTiles 0
 #define kSupportsMultiResolution 0
@@ -56,14 +56,14 @@
 #define kParamFontSizeDefault 64
 
 #define kParamFontName "name"
-#define kParamFontNameLabel "Font family"
-#define kParamFontNameHint "The name of the font to be used."
+#define kParamFontNameLabel "Select font"
+#define kParamFontNameHint "Select font family to be used.\n\nThis parameter is only used to set font family in the 'font' parameter. This parameter does not support animation, use the 'font' parameter for animation."
 #define kParamFontNameDefault "Arial"
 #define kParamFontNameAltDefault "DejaVu Sans" // failsafe on Linux/BSD
 
 #define kParamFont "font"
-#define kParamFontLabel "Font"
-#define kParamFontHint "Selected font."
+#define kParamFontLabel "Font family"
+#define kParamFontHint "The name of the font to be used.\n\nThis parameter can also be used to animate the font family."
 
 #define kParamStyle "style"
 #define kParamStyleLabel "Style"
@@ -210,8 +210,8 @@
 #define kParamCenterInteractDefault false
 
 #define kParamFontOverride "custom"
-#define kParamFontOverrideLabel "Custom font"
-#define kParamFontOverrideHint "Add custom font."
+#define kParamFontOverrideLabel "Custom font(s)"
+#define kParamFontOverrideHint "Add custom font(s) to the font list. This can be a font file or a directory with fonts.\n\nIf you want a portable project copy all used fonts to [Project]/fonts (or similar) and reference them here."
 
 #define kParamScrollX "scrollX"
 #define kParamScrollXLabel "Scroll X"
@@ -222,6 +222,10 @@
 #define kParamScrollYLabel "Scroll Y"
 #define kParamScrollYHint "Scroll canvas Y. Only works if Transform, AutoSize, Circle and Arc is disabled/not used."
 #define kParamScrollYDefault 0
+
+#define kParamGeneratorRange "frameRange"
+#define kParamGeneratorRangeLabel "Frame Range"
+#define kParamGeneratorRangeHint "Time domain."
 
 using namespace OFX;
 static bool gHostIsNatron = false;
@@ -326,6 +330,9 @@ public:
     // override the rod call
     virtual bool getRegionOfDefinition(const OFX::RegionOfDefinitionArguments &args, OfxRectD &rod) OVERRIDE FINAL;
 
+    /* override the time domain action, only for the general context */
+    virtual bool getTimeDomain(OfxRangeD &range) OVERRIDE FINAL;
+
     std::string textFromFile(std::string filename);
     void loadSRT();
     void resetCenter(double time);
@@ -378,6 +385,7 @@ private:
     OFX::DoubleParam *_scrollY;
     OFX::StringParam *_srt;
     OFX::DoubleParam *_fps;
+    OFX::Int2DParam  *_range;
 };
 
 TextFXPlugin::TextFXPlugin(OfxImageEffectHandle handle)
@@ -427,6 +435,7 @@ TextFXPlugin::TextFXPlugin(OfxImageEffectHandle handle)
 , _scrollY(NULL)
 , _srt(NULL)
 , _fps(NULL)
+, _range(NULL)
 {
     _dstClip = fetchClip(kOfxImageEffectOutputClipName);
     assert(_dstClip && _dstClip->getPixelComponents() == OFX::ePixelComponentRGBA);
@@ -474,6 +483,10 @@ TextFXPlugin::TextFXPlugin(OfxImageEffectHandle handle)
     _scrollY = fetchDoubleParam(kParamScrollY);
     _srt = fetchStringParam(kParamSubtitleFile);
     _fps = fetchDoubleParam(kParamFPS);
+    if (getContext() == eContextGeneral) {
+        _range   = fetchInt2DParam(kParamGeneratorRange);
+        assert(_range);
+    }
 
     assert(_text && _fontSize && _fontName && _textColor && _bgColor && _font && _wrap
            && _justify && _align && _valign && _markup && _style && auto_ && stretch_ && weight_ && strokeColor_
@@ -518,6 +531,9 @@ TextFXPlugin::TextFXPlugin(OfxImageEffectHandle handle)
             }
         }
     }
+
+    // need to set a default or else font will be empty if we reset to default
+    _font->setDefault(font.empty()? fontName : font);
 }
 
 TextFXPlugin::~TextFXPlugin()
@@ -901,8 +917,13 @@ void TextFXPlugin::render(const OFX::RenderArguments &args)
     pango_cairo_context_set_font_options(pango_layout_get_context(layout), options);
 
     if (markup) {
-        pango_layout_set_markup(layout, text.c_str(), -1);
-    } else {
+        if ( pango_parse_markup(text.c_str(), -1, 0, NULL, NULL, NULL, NULL) ) {
+            pango_layout_set_markup(layout, text.c_str(), -1);
+        } else {
+            markup = false; // fallback to plain text
+        }
+    }
+    if (!markup) {
         pango_layout_set_text(layout, text.c_str(), -1);
     }
 
@@ -1329,8 +1350,13 @@ bool TextFXPlugin::getRegionOfDefinition(const OFX::RegionOfDefinitionArguments 
         alist = pango_attr_list_new();
 
         if (markup) {
-            pango_layout_set_markup(layout, text.c_str(), -1);
-        } else {
+            if ( pango_parse_markup(text.c_str(), -1, 0, NULL, NULL, NULL, NULL) ) {
+                pango_layout_set_markup(layout, text.c_str(), -1);
+            } else {
+                markup = false; // fallback to plain text
+            }
+        }
+        if (!markup) {
             pango_layout_set_text(layout, text.c_str(), -1);
         }
 
@@ -1375,6 +1401,25 @@ bool TextFXPlugin::getRegionOfDefinition(const OFX::RegionOfDefinitionArguments 
     return true;
 }
 
+bool TextFXPlugin::getTimeDomain(OfxRangeD &range)
+{
+    // this should only be called in the general context, ever!
+    if (getContext() == eContextGeneral) {
+        assert(_range);
+        // how many frames on the input clip
+        //OfxRangeD srcRange = _srcClip->getFrameRange();
+
+        int min, max;
+        _range->getValue(min, max);
+        range.min = min;
+        range.max = max;
+
+        return true;
+    }
+
+    return false;
+}
+
 mDeclarePluginFactory(TextFXPluginFactory, {}, {});
 
 /** @brief The basic describe function, passed a plugin descriptor */
@@ -1386,6 +1431,7 @@ void TextFXPluginFactory::describe(OFX::ImageEffectDescriptor &desc)
     desc.setPluginDescription("Advanced text generator node using Pango and Cairo.");
 
     // add the supported contexts
+    desc.addSupportedContext(eContextGeneral);
     desc.addSupportedContext(eContextGenerator);
 
     // add supported pixel depths
@@ -1401,7 +1447,7 @@ void TextFXPluginFactory::describe(OFX::ImageEffectDescriptor &desc)
 }
 
 /** @brief The describe in context function, passed a plugin descriptor and a context */
-void TextFXPluginFactory::describeInContext(OFX::ImageEffectDescriptor &desc, ContextEnum /*context*/)
+void TextFXPluginFactory::describeInContext(OFX::ImageEffectDescriptor &desc, ContextEnum context)
 {
     // natron?
     gHostIsNatron = (OFX::getImageEffectHostDescription()->isNatron);
@@ -1607,7 +1653,7 @@ void TextFXPluginFactory::describeInContext(OFX::ImageEffectDescriptor &desc, Co
         } else if (altFont > 0) {
             param->setDefault(altFont);
         }
-        param->setAnimates(false);
+        param->setAnimates(false); // can not animate, the param is dynamic
         if (fonts.empty()) {
             param->appendOption("N/A");
         }
@@ -1630,13 +1676,13 @@ void TextFXPluginFactory::describeInContext(OFX::ImageEffectDescriptor &desc, Co
         param->setLabel(kParamFontLabel);
         param->setHint(kParamFontHint);
         param->setStringType(eStringTypeSingleLine);
-        param->setAnimates(false);
+        param->setAnimates(true);
 
-        #ifdef DEBUG
+        /*#ifdef DEBUG
         param->setIsSecret(false);
         #else
         param->setIsSecret(true);
-        #endif
+        #endif*/
 
         if (page) {
             page->addChild(*param);
@@ -1678,8 +1724,8 @@ void TextFXPluginFactory::describeInContext(OFX::ImageEffectDescriptor &desc, Co
         IntParamDescriptor* param = desc.defineIntParam(kParamLetterSpace);
         param->setLabel(kParamLetterSpaceLabel);
         param->setHint(kParamLetterSpaceHint);
-        param->setRange(0, 10000);
-        param->setDisplayRange(0, 500);
+        param->setRange(-10000, 10000);
+        param->setDisplayRange(-250, 250);
         param->setDefault(kParamLetterSpaceDefault);
         param->setLayoutHint(OFX::eLayoutHintDivider);
         if (page) {
@@ -1916,6 +1962,19 @@ void TextFXPluginFactory::describeInContext(OFX::ImageEffectDescriptor &desc, Co
         param->setDisplayRange(-4000, 4000);
         param->setDefault(kParamScrollYDefault);
         param->setAnimates(true);
+        param->setLayoutHint(OFX::eLayoutHintDivider);
+        if (page) {
+            page->addChild(*param);
+        }
+    }
+    // range
+    if (context == eContextGeneral) {
+        Int2DParamDescriptor *param = desc.defineInt2DParam(kParamGeneratorRange);
+        param->setLabel(kParamGeneratorRangeLabel);
+        param->setHint(kParamGeneratorRangeHint);
+        param->setDefault(1, 1);
+        param->setDimensionLabels("min", "max");
+        param->setAnimates(false); // can not animate, because it defines the time domain
         if (page) {
             page->addChild(*param);
         }
