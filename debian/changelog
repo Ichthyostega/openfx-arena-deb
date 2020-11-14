@@ -1,3 +1,13 @@
+openfx-arena-natron (2.3.15+libs-1~buster) Lumiera-buster-tool; urgency=low
+
+  * now based on the official Release Natron 2.3.15
+  * Including AudioCurve and HaldCLUT
+  * Not including RichText and MIDI for now (experimental)
+  * Note again, requires ImageMagic with quantum.depth=16 and HDRI
+  * Rebuild for use on Debian/Buster(stable).
+
+ -- Hermann Vosseler <deb@ichthyostega.de>  Sat, 14 Nov 2020 15:08:17 +0100
+
 openfx-arena-natron (2.3.15~rc14+libs-2~buster) Lumiera-buster-tool; urgency=low
 
   * Do not include the RichText plugin yet (it is WIP)
