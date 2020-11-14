@@ -15,7 +15,8 @@ override_dh_auto_configure:
 	dh_auto_configure -- \
 	    -DCMAKE_BUILD_TYPE:STRING="release" \
 	    -DMAGICK_PKG_CONFIG:STRING="Magick++-6.Q16HDRI" \
-	    -DAUDIO:BOOL="1" \
+	    -DAUDIO:BOOL="1"  \
+	    -DHALDCLUT:BOOL="1"\
 	    -DRICHTEXT:BOOL="0" \
 	    -DOFX_PLUGIN_PATH:STRING="lib/OFX/Plugins"
 

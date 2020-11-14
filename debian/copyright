@@ -3,16 +3,22 @@ Upstream-Name: openfx-arena-natron
 Source: https://github.com/NatronGitHub/openfx-arena/releases
 
 Files: *
-Copyright: (C) 2013-2017 INRIA
+Copyright: (C) 2013-2018 INRIA
 License: GPL-2+
 
 Files: debian/*
 Copyright: 2018 Aleksey Samoilov <samoilov.lex@gmail.com>
+           2020 Hermann Vosseler <deb@ichthyostega.de>
 License: GPL-2+
 
 Files: Bundle/*
 Copyright: 2005-2020 Lode Vandevenne
 License: LodePNG-credit
+
+Files: Audio/*
+Copyright: 2019 Ole-André Rodlie <ole.andre.rodlie@gmail.com>
+License: LGPL-2.1+
+ /usr/share/common-licenses/LGPL-2.1
 
 
 License: GPL-2+
@@ -52,4 +58,7 @@ License: LodePNG-credit
  .
  3. This notice may not be removed or altered from any source
     distribution.
+
+
+License: LGPL-2.1+
 

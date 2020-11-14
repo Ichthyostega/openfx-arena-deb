@@ -4,6 +4,8 @@ Priority: optional
 Maintainer: Hermann Vosseler <deb@ichthyostega.de>
 Standards-Version: 3.9.8
 Build-Depends: debhelper (>= 11~),
+	pkg-config,
+	cmake,
 	libopencolorio-dev (>= 1.0.9),
 	libpoppler-glib-dev (>= 0.83~),
 	libpoppler-private-dev (>= 0.83~),
@@ -27,25 +29,45 @@ Build-Depends: debhelper (>= 11~),
 	libxml2-dev,
 	libzip-dev,
 # for HaldCLUT (download CLUT files)
-	libcurl4-gnutls-dev,
-	pkg-config,
-	cmake
+	libcurl4-gnutls-dev
 
 Package: openfx-arena-natron
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: extended set of OpenFX plugins designed for Natron
- The OpenFX plugins in this package can be used with Natron, but are also
- compatible with other OpenFX hosts:
+ The OpenFX plugins in this package can be used with Natron,
+ but are also compatible with other OpenFX hosts:
  .
- OpenRaster; ReadCDR; ReadKrita; ReadSVG; ReadPDF; Text(FX); Arc; Charcoal;
- Edges; Implode; Modulate; Oilpaint; Polar; Polaroid; ReadMisc; ReadPSD(XCF);
- Reflection; Roll; Sketch; Swirl; Texture; Tile; Wave; Bulge (OCL);
- Glare (OCL); Ripple (OCL); Twirl (OCL); Sharpen (OCL); Cartoon (OCL);
- Duotone (OCL); Edge (OCL); CLFilter (OCL); HaldCLUT; Morphology;
- AudioCurve; RichText
+  * OpenRaster
+  * ReadCDR
+  * ReadKrita
+  * ReadSVG
+  * ReadPDF
+  * Text
+  * Arc
+  * Charcoal
+  * Edges
+  * Implode
+  * Modulate
+  * Oilpaint
+  * Polar
+  * Polaroid
+  * ReadMisc
+  * ReadPSD *(and XCF)*
+  * Reflection
+  * Roll
+  * Sketch
+  * Swirl
+  * Texture
+  * Tile
+  * Wave
+  * Morphology
+  * AudioCurve
  .
- Note: the HaldCLUT plugin may download ~100MiB of CLUT files to simulate
- film look. These are available at https://github.com/NatronGitHub/clut
- and licensed CC-By-SA 4.0(int)
+ NOTE: this plugin package requires and uses ImagaMagic "q16hdri"
+ with 16bit scale and unclamped float processing("HDRI")
+ .
+ Note: In addition, the optional *HaldCLUT* plugin is included. This plugin
+ may download ~100MiB of CLUT files to simulate film look. These are available
+ at https://github.com/NatronGitHub/clut and licensed CC-By-SA 4.0(int)
 
