@@ -1,3 +1,13 @@
+openfx-arena-natron (2.3.15+libs-1ppa1~focal) focal; urgency=low
+
+  * now based on the official Release Natron 2.3.15
+  * Including AudioCurve and HaldCLUT
+  * Not including RichText and MIDI for now (experimental)
+  * Note again, requires ImageMagic with quantum.depth=16 and HDRI
+  * Rebuild for Ubuntu/Focal (20.04 LTS).
+
+ -- Hermann Vosseler <deb@ichthyostega.de>  Sun, 15 Nov 2020 02:49:15 +0100
+
 openfx-arena-natron (2.3.15+libs-1~buster) Lumiera-buster-tool; urgency=low
 
   * now based on the official Release Natron 2.3.15
